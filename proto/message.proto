@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package itach_oj;
+option cc_generic_services = true;
+
+message CompileRunRequest {
+  string code = 1;        // 拼接后的代码
+  string input = 2;       // 暂时保留未使用
+  int32 cpu_limit = 3;    // CPU 限制时间
+  int32 mem_limit = 4;    // 内存限制，图一乐，内存限制并不严格
+
+  enum Language {
+    CPP = 0;   // C++
+    JAVA = 1;  // Java
+    GO = 2;    // Go
+  }
+
+  Language language = 5;  // 指定编程语言
+}
+
+message CompileRunResponse {
+  int32 status = 1;             // 响应状态码：0 全部通过，1 部分通过，-1 编译错误，-2 运行时被信号杀死
+  string reason = 2;            // 状态码为 -1 或 -2 时的错误信息（编译错误或信号名）
+  string proto_stdout = 3;      // 程序标准输出内容
+  string proto_stderr = 4;      // 程序标准错误输出内容
+  int32 pass_num = 5;           // 通过的测试用例数
+  int32 total_num = 6;          // 总测试用例数
+  string last_error_input = 7;  // 第一个未通过样例的输入
+}
+
+service CompileRunService {
+  rpc Start(CompileRunRequest) returns (CompileRunResponse);
+}

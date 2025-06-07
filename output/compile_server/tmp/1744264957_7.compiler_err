@@ -1,0 +1,4 @@
+./tmp/1744264957_7.cpp: In member function ‘bool Solution::isPalindrome(int)’:
+./tmp/1744264957_7.cpp:16:5: error: expected ‘;’ before ‘}’ token
+   16 |     }
+      |     ^

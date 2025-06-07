@@ -1,0 +1,4 @@
+./tmp/1744264984_9.cpp: In member function ‘bool Solution::isPalindrome(int)’:
+./tmp/1744264984_9.cpp:15:9: error: invalid type argument of unary ‘*’ (have ‘std::nullptr_t’)
+   15 |         *nullptr = 1;
+      |         ^~~~~~~~

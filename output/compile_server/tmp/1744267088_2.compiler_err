@@ -1,0 +1,18 @@
+./tmp/1744267088_2.cpp: In lambda function:
+./tmp/1744267088_2.cpp:81:35: error: ‘Solution’ was not declared in this scope
+   81 |              { return assertEqual(Solution().isPalindrome(121), true); }, "121"},
+      |                                   ^~~~~~~~
+./tmp/1744267088_2.cpp: In lambda function:
+./tmp/1744267088_2.cpp:83:35: error: ‘Solution’ was not declared in this scope
+   83 |              { return assertEqual(Solution().isPalindrome(-10), false); }, "-10"},
+      |                                   ^~~~~~~~
+./tmp/1744267088_2.cpp: In lambda function:
+./tmp/1744267088_2.cpp:85:35: error: ‘Solution’ was not declared in this scope
+   85 |              { return assertEqual(Solution().isPalindrome(12321), true); }, "12321"}};
+      |                                   ^~~~~~~~
+./tmp/1744267088_2.cpp: In function ‘int main(int, char**)’:
+./tmp/1744267088_2.cpp:85:85: error: could not convert ‘{{<lambda closure object>main(int, char**)::<lambda()>(), "121"}, {<lambda closure object>main(int, char**)::<lambda()>(), "-10"}, {<lambda closure object>main(int, char**)::<lambda()>(), "12321"}}’ from ‘<brace-enclosed initializer list>’ to ‘VTests’ {aka ‘std::vector<std::pair<std::function<bool()>, std::__cxx11::basic_string<char> > >’}
+   85 |              { return assertEqual(Solution().isPalindrome(12321), true); }, "12321"}};
+      |                                                                                     ^
+      |                                                                                     |
+      |                                                                                     <brace-enclosed initializer list>
