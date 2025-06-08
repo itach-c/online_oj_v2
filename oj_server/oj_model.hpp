@@ -56,12 +56,41 @@ namespace ns_model
                 q.mem_limit = std::stoi(v[4]);
 
                 std::string question_desc_path = questions_path + q.qid + "/desc.txt";
-                std::string question_header_path = questions_path + q.qid + "/header.hpp";
-                std::string question_tail_path = questions_path + q.qid + "/tail.cpp";
+
+                std::string question_header_path_cpp = questions_path + q.qid + "/cpp/header.hpp";
+                std::string question_header_path_java = questions_path + q.qid + "/java/header.java";
+                std::string question_header_path_go = questions_path + q.qid + "/go/header.go";
+
 
                 FileUtile::ReadFile(question_desc_path, &q.desc);
-                FileUtile::ReadFile(question_header_path, &q.header);
-                FileUtile::ReadFile(question_tail_path, &q.tail);
+                
+                // load language
+                std::string header_temp;
+                FileUtile::ReadFile(question_header_path_cpp, &header_temp);
+                q.header.insert({"c_cpp",header_temp});
+                FileUtile::ReadFile(question_header_path_java, &header_temp);
+                q.header.insert({"java",header_temp});  
+                FileUtile::ReadFile(question_header_path_go, &header_temp);
+                q.header.insert({"go",header_temp});
+
+                // std::cout<<"===========header load start============="<<"\n";
+                // for(const auto &it :q.header){
+                //     //   MYLOG_INFO(it.second);
+                //     std::cout<<"the header language is:"<<it.first<<" content: "<<it.second<<"\n";
+                // }
+                // std::cout<<"===========header load end============="<<"\n";               
+                
+                std::string question_tail_path_cpp = questions_path + q.qid +  "/cpp/tail.cpp";
+                std::string question_tail_path_java = questions_path + q.qid + "/java/tail.java";
+                std::string question_tail_path_go = questions_path + q.qid +   "/go/tail.go";
+                
+                std::string tail_temp;
+                FileUtile::ReadFile(question_tail_path_cpp, &tail_temp);
+                q.tail.insert({"c_cpp",tail_temp});
+                FileUtile::ReadFile(question_tail_path_java, &tail_temp);
+                q.tail.insert({"java",tail_temp});
+                FileUtile::ReadFile(question_tail_path_go, &tail_temp);
+                q.tail.insert({"go",tail_temp});
 
                 questions_.insert({q.qid, q});
             }
@@ -86,6 +115,7 @@ namespace ns_model
 
         bool GetOneQuestion(const std::string &num, question *q)
         {
+            //language change here;
             auto it = questions_.find(num);
             if (it == questions_.end())
             {
@@ -140,8 +170,9 @@ namespace ns_model
             std::lock_guard<std::mutex> lock(redis_mtx_);
             try
             {
-                redis_client_.connect("127.0.0.1", 6379);
+                redis_client_.connect("192.168.203.129", 6379);
                 redis_client_.ping(); // 尝试发送一个 ping 命令看能不能连通
+                redis_client_.auth("123456");
                 redis_client_.sync_commit();
                 MYLOG_INFO("Redis 同步连接成功");
             }

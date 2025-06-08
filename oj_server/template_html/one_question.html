@@ -2,22 +2,14 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{number}}.{{title}}</title>
-    <!-- 引入ACE插件 -->
-    <!-- 官网链接：https://ace.c9.io/ -->
-    <!-- CDN链接：https://cdnjs.com/libraries/ace -->
-    <!-- 使用介绍：https://www.iteye.com/blog/ybc77107-2296261 -->
-    <!-- https://justcode.ikeepstudying.com/2016/05/ace-editor-%E5%9C%A8%E7%BA%BF%E4%BB%A3%E7%A0%81%E7%BC%96%E8%BE%91%E6%9E%81%E5%85%B6%E9%AB%98%E4%BA%AE/ -->
-    <!-- 引入ACE CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js" type="text/javascript"
-        charset="utf-8"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js" type="text/javascript"
-        charset="utf-8"></script>
-    <!-- 引入jquery CDN -->
-    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{number}}.{{title}}</title>
+  <!-- 引入 ACE 编辑器 和 jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-language_tools.js"></script>
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
 
     <style>
         * {
@@ -76,6 +68,12 @@
             height: 600px;
             float: left;
             overflow: scroll;
+        }
+
+        .container .part1 .right_code .ace_editor {
+            height: 600px;
+            padding-top: 50px; /* 留出语言选择器高度 */
+            box-sizing: border-box;
         }
 
         .container .part1 .left_desc h3 {
@@ -139,150 +137,189 @@
 </head>
 
 <body>
-    <div class="container">
-        <!-- 导航栏， 功能不实现-->
-        <div class="navbar">
-            <a href="/">首页</a>
-            <a href="/all_questions">题库</a>
-            <a href="#">竞赛</a>
-            <a href="#">讨论</a>
-            <a href="#">求职</a>
-            <a class="login" href="#">登录</a>
-        </div>
-        <!-- 左右呈现，题目描述和预设代码 -->
-        <div class="part1">
-            <div class="left_desc">
-                <h3><span id="number">{{number}}</span>.{{title}}_{{star}}</h3>
-                <pre>{{desc}}</pre>
-            </div>
-            <div class="right_code">
-                <pre id="code" class="ace_editor"><textarea class="ace_text-input">{{pre_code}}</textarea></pre>
-            </div>
-        </div>
-        <!-- 提交并且得到结果，并显示 -->
-        <div class="part2">
-            <div class="result"></div>
-            <button class="btn-submit" onclick="submit()">提交代码</button>
-        </div>
+  <div class="container">
+    <!-- 导航栏 -->
+    <div class="navbar">
+      <a href="/">首页</a>
+      <a href="/all_questions">题库</a>
+      <a href="#">竞赛</a>
+      <a href="#">讨论</a>
+      <a href="#">求职</a>
+      <a class="login" href="#">登录</a>
     </div>
-    <script>
-        //初始化对象
-        editor = ace.edit("code");
 
-        //设置风格和语言（更多风格和语言，请到github上相应目录查看）
-        // 主题大全：http://www.manongjc.com/detail/25-cfpdrwkkivkikmk.html
-        editor.setTheme("ace/theme/monokai");
-        editor.session.setMode("ace/mode/c_cpp");
+    <!-- 题目描述 + 编辑区 -->
+    <div class="part1">
+      <div class="left_desc">
+        <h3><span id="number">{{number}}</span>.{{title}}_{{star}}</h3>
+        <pre>{{desc}}</pre>
+      </div>
 
-        // 字体大小
-        editor.setFontSize(16);
-        // 设置默认制表符的大小:
-        editor.getSession().setTabSize(4);
+      <div class="right_code">
+        <!-- 语言选择器 -->
+        <div class="language-select-container">
+          <label for="language-select">语言：</label>
+          <select id="language-select">
+            <option value="c_cpp">C/C++</option>
+            <option value="java">Java</option>
+            <option value="go">Go</option>
+          </select>
+        </div>
+        <!-- 代码编辑器容器，后端初始渲染的 {{pre_code}} -->
+        <pre id="code" class="ace_editor">
+           <textarea class="ace_text-input">
+             {{pre_code}}
+            </textarea>
+          </pre>
+      </div>
+    </div>
 
-        // 设置只读（true时只读，用于展示代码）
-        editor.setReadOnly(false);
+    <!-- 提交 & 结果显示 -->
+    <div class="part2">
+      <div class="result"></div>
+      <button class="btn-submit" onclick="submit()">提交代码</button>
+    </div>
+  </div>
 
-        // 启用提示菜单
-        ace.require("ace/ext/language_tools");
-        editor.setOptions({
-            enableBasicAutocompletion: true,
-            enableSnippets: true,
-            enableLiveAutocompletion: true
-        });
-        function submit() {
+  <script>
+    let editor;  // ACE 编辑器实例
 
-            var code = editor.getSession().getValue();
-            var number = $(".container .part1 .left_desc h3 #number").text();
-            var judge_url = "/judge/" + number;
-            var result_div = $(".container .part2 .result");
-            result_div.empty();
+    /**
+     * 初始化 ACE 编辑器
+     * 每次加载页面或者切换语言后，都要调用一次
+     */
+    function initEditor() {
+      editor = ace.edit("code");
+      editor.setTheme("ace/theme/monokai");
+      // 根据下拉框当前值设置语法模式
+      editor.session.setMode("ace/mode/" + $("#language-select").val());
+      editor.setFontSize(16);
+      editor.getSession().setTabSize(4);
+      editor.setReadOnly(false);
 
-            // 显示正在判题中提示
-            var loading = $("<p>", { text: "正在判题中，请稍候..." });
-            loading.appendTo(result_div);
+      // 启用自动补全等功能
+      ace.require("ace/ext/language_tools");
+      editor.setOptions({
+        enableBasicAutocompletion: true,
+        enableSnippets: true,
+        enableLiveAutocompletion: true
+      });
+    }
 
-            $.ajax({
-                method: 'POST',
-                url: judge_url,
-                dataType: 'json',
-                contentType: 'application/json;charset=utf-8',
-                data: JSON.stringify({
-                    'code': code,
-                    'input': ''
-                }),
-                success: function (data) {
-                    if (data.ok && data.id) {
-                        // 1秒后开始轮询
-                        setTimeout(() => {
-                            poll_result(data.id);
-                        }, 1000);
-                    } else {
-                        result_div.empty();
-                        $("<p>", { text: "提交失败，请重试" }).appendTo(result_div);
-                    }
-                }
-            });
+    // 页面加载完成时初始化编辑器
+    $(function () {
+      initEditor();
 
-            function poll_result(task_id) {
-                const maxAttempts = 10;
-                let attempts = 0;
+      // 绑定语言切换事件
+      $("#language-select").on("change", onLanguageChange);
+    });
 
-                const intervalId = setInterval(() => {
-                    $.get("/GetResult/" + task_id, function (data) {
-                        attempts++;
+    /**
+     * 语言切换事件处理
+     * 向后端 POST {language}，获取新的模板代码，重新加载 editor
+     */
+    function onLanguageChange() {
+      const number = $("#number").text();
+      const lang = $(this).val();
 
-                        // 判题结果未就绪，status 可能为 null/undefined/2 等
-                        if (typeof data.status !== 'number' || ![-2, -1, 0, 1].includes(data.status)) {
-                            if (attempts >= maxAttempts) {
-                                clearInterval(intervalId);
-                                result_div.empty();
-                                $("<p>", { text: "服务器判题超时，请稍后重试。" }).appendTo(result_div);
-                            }
-                            return; // 继续轮询
-                        }
+      $.ajax({
+        method: 'POST',
+        url: `/language_change/${number}`,
+        dataType: 'text',
+        contentType: 'application/json;charset=utf-8',
+        data: JSON.stringify({ language: lang }),  // 发送 {language:"java"} 之类
+        success(templateCode) {
+          // 成功后，用返回的纯文本模板代码替换 editor 容器内容
+          // 注意：SetValue 会清空 undo 栈
+          editor.setValue(templateCode, -1); // 第二参数 -1 把光标置顶
 
-                        // 一旦拿到有效判题结果，清除轮询
-                        clearInterval(intervalId);
-                        result_div.empty();
-
-                        // 展示 reason
-                        $("<p>", { text: data.reason }).appendTo(result_div);
-
-                        // 展示输出
-                        if ('stdout' in data) {
-                            $("<pre>", { text: "输出：\n" + data.stdout }).appendTo(result_div);
-                        }
-                        if ('stderr' in data && data.stderr.trim()) {
-                            $("<pre>", { text: "错误输出：\n" + data.stderr }).appendTo(result_div);
-                        }
-
-                        // 判断状态
-
-                        if (data.status == 0) {
-                            $("<p>", { text: "恭喜你，所有测试用例通过！" }).appendTo(result_div);
-                            // 1秒后跳转到 /pass.html
-                            setTimeout(() => {
-                                window.location.href = "/pass.html";
-                            }, 1000); // 可调整延迟时间
-                        } else if (data.status == 1) {
-                            $("<p>", { text: `部分通过：${data.passnum}/${data.totalnum}` }).appendTo(result_div);
-
-
-                            if (data.LastErrorInput) {
-                                $("<pre>", { text: "未通过的测试用例：\n" + data.LastErrorInput }).appendTo(result_div);
-                            }
-                        } else if (data.status == -1) {
-                            $("<p>", { text: "编译错误：" + data.reason }).appendTo(result_div);
-                        } else if (data.status == -2) {
-                            $("<p>", { text: "运行时被信号杀死：" + data.reason }).appendTo(result_div);
-                        } else {
-                            $("<p>", { text: "未知错误。" }).appendTo(result_div);
-                        }
-                    });
-                }, 1000); // 每秒轮询一次
-            }
+          // 切换高亮模式
+          editor.session.setMode("ace/mode/" + lang);
+        },
+        error() {
+          alert("语言切换失败，请稍后重试");
         }
-    </script>
+      });
+    }
+
+    /**
+     * 提交代码到 /judge/{number}
+     */
+    function submit() {
+      const code = editor.getValue();
+      const number = $("#number").text();
+      const lang = $("#language-select").val();
+      const resultDiv = $(".part2 .result").empty();
+
+      // 提示正在判题
+      $("<p>正在判题中，请稍候...</p>").appendTo(resultDiv);
+
+      $.ajax({
+        method: 'POST',
+        url: `/judge/${number}`,
+        dataType: 'json',
+        contentType: 'application/json;charset=utf-8',
+        data: JSON.stringify({
+          code: code,
+          language: lang,
+          input: ''
+        }),
+        success(data) {
+          if (data.ok && data.id) {
+            setTimeout(() => pollResult(data.id), 1000);
+          } else {
+            resultDiv.empty().append("<p>提交失败，请重试</p>");
+          }
+        },
+        error() {
+          resultDiv.empty().append("<p>请求失败，请检查网络</p>");
+        }
+      });
+    }
+
+    /**
+     * 轮询获取判题结果
+     */
+    function pollResult(taskId) {
+      const resultDiv = $(".part2 .result");
+      let attempts = 0, max = 10;
+
+      const timer = setInterval(() => {
+        $.get(`/GetResult/${taskId}`, data => {
+          // 未准备好则继续轮询
+          if (typeof data.status !== 'number' || ![-2, -1, 0, 1].includes(data.status)) {
+            if (++attempts >= max) {
+              clearInterval(timer);
+              resultDiv.empty().append("<p>服务器判题超时，请稍后重试。</p>");
+            }
+            return;
+          }
+          clearInterval(timer);
+          resultDiv.empty();
+
+          // 展示 reason、stdout、stderr
+          $("<p>").text(data.reason).appendTo(resultDiv);
+          if (data.stdout) $("<pre>").text("输出：\n" + data.stdout).appendTo(resultDiv);
+          if (data.stderr) $("<pre>").text("错误输出：\n" + data.stderr).appendTo(resultDiv);
+
+          // 根据状态码给提示
+          if (data.status === 0) {
+            resultDiv.append("<p>恭喜你，所有测试用例通过！</p>");
+            setTimeout(() => location.href = "/pass.html", 1000);
+          } else if (data.status === 1) {
+            resultDiv.append(`<p>部分通过：${data.passnum}/${data.totalnum}</p>`);
+            if (data.LastErrorInput) {
+              $("<pre>").text("未通过的测试用例：\n" + data.LastErrorInput).appendTo(resultDiv);
+            }
+          } else if (data.status === -1) {
+            resultDiv.append(`<p>编译错误：${data.reason}</p>`);
+          } else if (data.status === -2) {
+            resultDiv.append(`<p>运行时被信号杀死：${data.reason}</p>`);
+          }
+        });
+      }, 1000);
+    }
+  </script>
 </body>
 
 </html>

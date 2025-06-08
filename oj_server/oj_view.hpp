@@ -44,7 +44,36 @@ namespace ns_view
             tpl->Expand(html, &root);
         }
 
-        void oneExpandHtml(std::string *html, const question &q)
+        // void oneExpandHtml(std::string *html, const question &q)
+        // {
+
+        //     // 1. 形成路径
+        //     std::string src_html = template_question_html_path + "one_question.html";
+
+        //     // 2. 形成数字典
+        //     ctemplate::TemplateDictionary root("one_question");
+        //     root.SetValue("number", q.qid);
+        //     root.SetValue("title", q.title);
+        //     root.SetValue("star", q.level);
+        //     root.SetValue("desc", q.desc);
+        //     auto it = q.header.find("cpp");
+        //     if (it != q.header.end()) {
+        //         root.SetValue("pre_code", it->second);
+        //     } else {
+        //         root.SetValue("pre_code", ""); // 默认空字符串
+        //         MYLOG_ERROR("cpp header faild!");
+                
+        //     }
+
+        //     // 3. 获取被渲染的html
+        //     ctemplate::Template *tpl = ctemplate::Template::GetTemplate(src_html, ctemplate::DO_NOT_STRIP);
+
+        //     // 4. 开始完成渲染功能
+        //     tpl->Expand(html, &root);
+        // }
+   
+
+        void oneExpandHtml(std::string *html, const question &q,std::string language = "c_cpp")
         {
 
             // 1. 形成路径
@@ -56,7 +85,17 @@ namespace ns_view
             root.SetValue("title", q.title);
             root.SetValue("star", q.level);
             root.SetValue("desc", q.desc);
-            root.SetValue("pre_code", q.header);
+            auto it = q.header.find(language);
+            if (it != q.header.end()) {
+                root.SetValue("pre_code", it->second);
+            } else {
+                root.SetValue("pre_code", ""); // 默认空字符串
+                MYLOG_ERROR("%s header faild!",language.c_str());
+                
+            }
+            std::cout<<"=========== in_json printf start =============="<<std::endl;
+            std::cout<<""<<it->second<<std::endl;
+            std::cout<<"=========== in_json printf end =============="<<std::endl;
 
             // 3. 获取被渲染的html
             ctemplate::Template *tpl = ctemplate::Template::GetTemplate(src_html, ctemplate::DO_NOT_STRIP);
@@ -64,5 +103,7 @@ namespace ns_view
             // 4. 开始完成渲染功能
             tpl->Expand(html, &root);
         }
+   
+   
     };
 };

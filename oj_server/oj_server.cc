@@ -39,8 +39,63 @@ int main(int argc, char *argv[])
             {
             std::string number = req.match_[1];
             std::string html;
+
+            //默认加载的是cpp的header
             ctrl->Onequestion(number, &html);
+            std::cout<<"=========== in_json printf start =============="<<std::endl;
+            std::cout<<""<<html<<std::endl;
+            std::cout<<"=========== in_json printf end =============="<<std::endl;
             resp->SetContent(html, "text/html; charset=utf-8"); });
+    
+//     svr.Post(R"(/language_change/(\d+))", [ctrl](const HttpRequest &req, HttpResPonse *resp)
+//             {
+//             std::string number = req.match_[1];
+//             std::string langCode;
+                
+//             Json::Value root;
+//             std::string content = req.content_;        
+//             // 2 反序列化得到用户代码和用户输入
+//             Json::Reader reader;
+//             reader.parse(content, root);
+//             std::string language = root["language"].asString();
+//             std::cout<<"========================== language is :"<<language<<std::endl;
+            
+//             ctrl->Language_change(number, &langCode,language);
+//         //     std::cout<<html<<std::endl;
+//             std::cout<<"=========================="<<std::endl;
+
+//             std::cout<<langCode<<std::endl;
+//             std::cout<<"=========================="<<std::endl;
+
+//             resp->SetContent(langCode, "text/html; charset=utf-8"); });
+
+
+        svr.Post(R"(/language_change/(\d+))", [ctrl](const HttpRequest &req, HttpResPonse *resp)
+        {
+        std::string number = req.match_[1];
+        std::string langCode;
+                        
+        Json::Value root;
+        std::string content = req.content_;        
+        // 反序列化得到用户请求的语言
+        Json::Reader reader;
+        reader.parse(content, root);
+        std::string language = root["language"].asString();
+        std::cout << "========================== language is :" << language << std::endl;
+        
+        // 获取对应语言的代码模板
+        ctrl->Language_change(number, &langCode, language);
+                std::cout<<"=========================="<<std::endl;
+
+            std::cout<<langCode<<std::endl;
+            std::cout<<"=========================="<<std::endl;
+
+
+        // 直接返回代码模板字符串，设置正确的Content-Type
+        resp->SetContent(langCode, "text/plain; charset=utf-8"); 
+        });
+
+
 
     // 用户提交代码，使用我们的判题功能(1. 每道题的测试用例 2. compile_and_run)
     svr.Post(R"(/judge/(\d+))", [ctrl](const HttpRequest &req, HttpResPonse *resp)
@@ -61,6 +116,7 @@ int main(int argc, char *argv[])
         std::string taskid_ = req.match_[1];
         std::string outjosn;
           ctrl->GetResult(taskid_, &outjosn);
+        std::cout<<"redis result is : " << outjosn <<std::endl;
         if (outjosn.size() > 0)
             resp->SetContent(outjosn, "application/json;charset=utf-8"); });
 

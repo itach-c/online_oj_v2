@@ -1,4 +1,4 @@
-testOj: oj_server.cc ../comm/message.pb.cc
+oj_server: oj_server.cc ../comm/message.pb.cc
 	g++ -o $@ $^ -std=c++17 \
 	-I../muduo/include/http \
 	-I../muduo/include/tcp \

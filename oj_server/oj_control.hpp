@@ -73,7 +73,7 @@ namespace ns_control
                 return false;
             }
         }
-        bool Onequestion(std::string &num, std::string *html)
+        bool Onequestion(std::string &num, std::string *html,std::string language = "c_cpp")
         {
 
             question q;
@@ -81,7 +81,7 @@ namespace ns_control
             {
 
                 // 构建html返回
-                view_.oneExpandHtml(html, q);
+                view_.oneExpandHtml(html, q,language);
                 return true;
             }
             else
@@ -90,12 +90,33 @@ namespace ns_control
                 return false;
             }
         }
+        
+        bool Language_change(std::string &num, std::string *langCode,std::string language = "c_cpp"){
+            question q;
+            if (model_.GetOneQuestion(num, &q) == true)
+            {
+                *langCode = q.header[language];
+            }
+            else
+            {
+                *langCode= "Language_change faild:" + num;
+                return false;
+            }
+
+
+        }
+
+
         void GetResult(const std::string &taskid, std::string *out_json)
         {
             *out_json = model_.GetResult(taskid);
         }
         uint64_t Judge(const std::string &num, const std::string &in_json, std::string *out_json)
         {
+            std::cout<<"=========== in_json printf start =============="<<std::endl;
+            std::cout<<""<<in_json<<std::endl;
+            std::cout<<"=========== in_json printf end =============="<<std::endl;
+
             // 1接受前端传来的代码
             question q;
             model_.GetOneQuestion(num, &q);
@@ -105,16 +126,44 @@ namespace ns_control
             Json::Reader reader;
             reader.parse(in_json, root);
             std::string code = root["code"].asString();
-            if (q.header == code)
-                return -1;
+            
             std::string input = root["input"].asString();
-
+            std::string lang = root["language"].asString();
+            
+            auto it = q.header.find(lang);
+            if (it != q.header.end() && it->second == code)
+                return -1;
+            std::cout<<"language is "<<lang<<std::endl;
             // 选择信道发起rpc调用;
             itach_oj::CompileRunRequest request;
-            request.set_code(code + q.tail);
+            request.set_code(code + q.tail[lang]);
             request.set_input(input);
             request.set_cpu_limit(q.cpu_limit);
             request.set_mem_limit(q.mem_limit);
+            
+            /*
+            enum Language {
+                CPP = 0;   // C++
+                JAVA = 1;  // Java
+                GO = 2;    // Go
+                }
+                
+                Language language = 5;  // 指定编程语言
+                */
+            if (!lang.empty()) {
+                if (lang == "c_cpp") {
+                    request.set_language(itach_oj::CompileRunRequest::CPP);
+                } else if (lang == "java") {
+                    request.set_language(itach_oj::CompileRunRequest::JAVA);
+                } else if (lang == "go") {
+                    request.set_language(itach_oj::CompileRunRequest::GO);
+                }
+            }
+            else{
+                MYLOG_ERROR("没有选择有效语言");
+            }
+
+               
             // 选择一个信道
             auto channel = pservice_manager_->choose(service_name_);
             if (channel == nullptr)
