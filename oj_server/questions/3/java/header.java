@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public boolean isPalindrome(int x) {
-        
+    public void reverseString(char[] s) {
+        // 用户代码
     }
 }

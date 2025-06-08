@@ -7,10 +7,13 @@
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
+using namespace std;
 class Solution
 {
 public:
-    bool isPalindrome(int x)
-    {
-    }
+    
+void reverseString(std::vector<char>& s)
+{
+    // 用户代码
+}
 };

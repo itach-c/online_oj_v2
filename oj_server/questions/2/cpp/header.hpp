@@ -7,10 +7,12 @@
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
-class Solution
-{
+
+using namespace std;
+
+class Solution {
 public:
-    bool isPalindrome(int x)
-    {
+    string longestPalindrome(string s) {
+        
     }
 };

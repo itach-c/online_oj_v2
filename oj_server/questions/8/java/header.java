@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public boolean isPalindrome(int x) {
-        
+    public int numBusesToDestination(List<List<Integer>> routes, int source, int target) {
+        // 用户代码
     }
 }

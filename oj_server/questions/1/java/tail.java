@@ -1,71 +1,42 @@
+
 // ======== TAIL ========
-public class Main {
+@FunctionalInterface
+interface TestFunc { boolean run(); }
 
-    @FunctionalInterface
-    interface TestFunc {
-        boolean run();
+static class TestCase {
+    TestFunc f; String in;
+    TestCase(TestFunc f, String in) { this.f = f; this.in = in; }
+}
+
+static boolean assertEqual(boolean a, boolean e) { return a == e; }
+
+static int saveResult(List<TestCase> tests, String path) {
+    int total = tests.size(), passed = 0;
+    String firstFail = "";
+    for (TestCase t : tests) {
+        if (t.f.run()) passed++;
+        else if (firstFail.isEmpty()) firstFail = t.in;
     }
+    try (FileWriter w = new FileWriter(path)) {
+        w.write(passed + " " + total + " " + firstFail);
+    } catch (IOException _){ return 1; }
+    return passed == total ? 0 : 1;
+}
 
-    static class TestCase {
-        TestFunc testFunc;
-        String inputStr;
-
-        TestCase(TestFunc testFunc, String inputStr) {
-            this.testFunc = testFunc;
-            this.inputStr = inputStr;
-        }
-    }
-
-    static boolean assertEqual(boolean actual, boolean expected) {
-        return actual == expected;
-    }
-
-    static int saveResult(List<TestCase> tests, String resultPath) {
-        int totalTests = tests.size();
-        int passedTests = 0;
-        String firstFailedInput = "";
-
-        for (TestCase test : tests) {
-            if (test.testFunc.run()) {  // 直接调用 run 方法
-                passedTests++;
-            } else if (firstFailedInput.isEmpty()) {
-                firstFailedInput = test.inputStr;
-            }
-        }
-
-        try (FileWriter writer = new FileWriter(resultPath)) {
-            writer.write(passedTests + " " + totalTests + " " + firstFailedInput);
-        } catch (IOException e) {
-            System.err.println("Error writing to file: " + e.getMessage());
-            return 1;
-        }
-
-        return (passedTests == totalTests) ? 0 : 1;
-    }
-
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("Usage: java Main <result_file_path>");
-            System.exit(1);
-        }
-
-        String resultPath = args[0];
-
-        List<TestCase> tests = new ArrayList<>();
-        tests.add(new TestCase(
-                () -> assertEqual(new Solution().isPalindrome(121), true),
-                "121"
-        ));
-        tests.add(new TestCase(
-                () -> assertEqual(new Solution().isPalindrome(-10), false),
-                "-10"
-        ));
-        tests.add(new TestCase(
-                () -> assertEqual(new Solution().isPalindrome(12321), true),
-                "12321"
-        ));
-
-        int result = saveResult(tests, resultPath);
-        System.exit(result);
-    }
+public static void main(String[] args) {
+    if (args.length < 1) System.exit(1);
+    String path = args[0];
+    List<TestCase> tests = Arrays.asList(
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(0), true), "0"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(-1), false), "-1"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(5), true), "5"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(10), false), "10"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(121), true), "121"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(-121), false), "-121"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(12321), true), "12321"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(1231), false), "1231"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(1001), true), "1001"),
+        new TestCase(() -> assertEqual(new Solution().isPalindrome(2147447412), true), "2147447412")
+    );
+    System.exit(saveResult(tests, path));
 }

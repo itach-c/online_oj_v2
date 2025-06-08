@@ -1,66 +1,70 @@
+// 在这里补充用户实现
 
-// 工具函数：断言实际值是否等于期望值
-bool assertEqual(bool actual, bool expected)
+
+// ======== TAIL ========
+
+bool assertEqual(int actual, int expected)
 {
     return actual == expected;
 }
 
-// 测试用例，每个包含函数+描述字符串
 using TestCase = std::pair<std::function<bool()>, std::string>;
 using VTests = std::vector<TestCase>;
 
-// 保存测试结果到文件
 int saveResult(VTests &tests, const std::string &result_path)
 {
-    int total_tests = tests.size();
-    int passed_tests = 0;
+    int total_tests = tests.size(), passed_tests = 0;
     std::string first_failed_input;
 
-    for (const auto &test : tests)
-    {
-        if (test.first())
-        {
-            passed_tests++;
-        }
-        else if (first_failed_input.empty())
-        {
-            first_failed_input = test.second;
-        }
+    for (auto &t : tests) {
+        if (t.first()) passed_tests++;
+        else if (first_failed_input.empty()) first_failed_input = t.second;
     }
 
-    // 创建或写入文件
     int fd = open(result_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (fd >= 0)
-    {
-        std::string result = std::to_string(passed_tests) + " " +
-                             std::to_string(total_tests) + " " +
-                             first_failed_input;
-        write(fd, result.c_str(), result.size());
+    if (fd >= 0) {
+        std::string r = std::to_string(passed_tests) + " " +
+                        std::to_string(total_tests) + " " +
+                        first_failed_input;
+        write(fd, r.c_str(), r.size());
         close(fd);
     }
-
     return (passed_tests == total_tests) ? 0 : 1;
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-    {  
-        std::cerr << "Usage: " << argv[0] << " <result_file_path>\n";
-        return 1;
-    }
-
-
-        std::string result_path = argv[1];
-
-        VTests tests = {
-            {[]()
-             { return assertEqual(Solution().isPalindrome(121), true); }, "121"},
-            {[]()
-             { return assertEqual(Solution().isPalindrome(-10), false); }, "-10"},
-            {[]()
-             { return assertEqual(Solution().isPalindrome(12321), true); }, "12321"}};
-
-        return saveResult(tests, result_path);
-    
+    if (argc < 2) return 1;
+    std::string p = argv[1];
+    VTests tests = {
+        // 1. 空线路
+        {[]{ vector<vector<int>> r; return assertEqual(Solution().numBusesToDestination(r, 1, 2), -1); }, "[] 1->2"},
+        // 2. 单一路线直达
+        {[]{ vector<vector<int>> r{{1,2,3}}; return assertEqual(Solution().numBusesToDestination(r, 1, 3), 1); }, "[1,2,3] 1->3"},
+        // 3. 两段换乘
+        {[]{ vector<vector<int>> r{{1,2},{2,3}}; return assertEqual(Solution().numBusesToDestination(r, 1, 3), 2); }, "[1,2],[2,3] 1->3"},
+        // 4. 不可达
+        {[]{ vector<vector<int>> r{{1,2},{3,4}}; return assertEqual(Solution().numBusesToDestination(r, 1, 4), -1); }, "[1,2],[3,4] 1->4"},
+        // 5. 三次换乘
+        {[]{ vector<vector<int>> r{{1,2,3},{3,4,5},{5,6}}; return assertEqual(Solution().numBusesToDestination(r, 1, 6), 3); }, "1->6 via 3,5"},
+        // 6. 路线重叠
+        {[]{ vector<vector<int>> r{{1,2,3,4},{4,5}}; return assertEqual(Solution().numBusesToDestination(r, 1, 5), 2); }, "[1-4],[4-5] 1->5"},
+        // 7. 单站与小换乘
+        {[]{ vector<vector<int>> r{{1},{1,2},{2,3}}; return assertEqual(Solution().numBusesToDestination(r, 1, 3), 3); }, "1->3 via single stops"},
+        // 8. 大编号
+        {[]{ vector<vector<int>> r{{100,200},{200,300},{300,400}}; return assertEqual(Solution().numBusesToDestination(r, 100, 400), 3); }, "100->400"},
+        // 9. 链式多转更复杂
+        {[]{ vector<vector<int>> r{{1,2,7},{3,6,7},{6,8,9},{9,10,2}}; return assertEqual(Solution().numBusesToDestination(r, 1, 10), 4); }, "1->10 via 7,6,9"},
+        // 10. 环与重复站点大规模测试
+        {[]{ vector<vector<int>> r{
+                    {1,2,3,4},
+                    {4,5,6},
+                    {6,7,8},
+                    {8,9,1},
+                    {2,9,10}
+                };
+                return assertEqual(Solution().numBusesToDestination(r, 3, 10), 5);
+          }, "3->10 complex loop"}
+    };
+    return saveResult(tests, p);
 }

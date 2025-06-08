@@ -1,74 +1,43 @@
 
-func assertEqual(actual, expected bool) bool {
-	return actual == expected
-}
+func assertEqual(actual, expected bool) bool { return actual == expected }
 
 type TestCase struct {
-	testFunc func() bool
-	inputStr string
+    testFunc func() bool
+    inputStr string
 }
 
 func saveResult(tests []TestCase, resultPath string) int {
-	totalTests := len(tests)
-	passedTests := 0
-	firstFailedInput := ""
-
-	for _, test := range tests {
-		if test.testFunc() {
-			passedTests++
-		} else if firstFailedInput == "" {
-			firstFailedInput = test.inputStr
-		}
-	}
-
-	file, err := os.Create(resultPath)
-	if err != nil {
-		fmt.Printf("Error creating file: %v\n", err)
-		return 1
-	}
-	defer file.Close()
-
-	result := fmt.Sprintf("%d %d %s", passedTests, totalTests, firstFailedInput)
-	_, err = file.WriteString(result)
-	if err != nil {
-		fmt.Printf("Error writing to file: %v\n", err)
-		return 1
-	}
-
-	if passedTests == totalTests {
-		return 0
-	}
-	return 1
+    total, passed := len(tests), 0
+    firstFail := ""
+    for _, t := range tests {
+        if t.testFunc() {
+            passed++
+        } else if firstFail == "" {
+            firstFail = t.inputStr
+        }
+    }
+    f, err := os.Create(resultPath)
+    if err != nil { return 1 }
+    defer f.Close()
+    fmt.Fprintf(f, "%d %d %s", passed, total, firstFail)
+    if passed == total { return 0 }
+    return 1
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: program <result_file_path>")
-		os.Exit(1)
-	}
-
-	resultPath := os.Args[1]
-
-	tests := []TestCase{
-		{
-			testFunc: func() bool {
-				return assertEqual(Solution{}.isPalindrome(121), true)
-			},
-			inputStr: "121",
-		},
-		{
-			testFunc: func() bool {
-				return assertEqual(Solution{}.isPalindrome(-10), false)
-			},
-			inputStr: "-10",
-		},
-		{
-			testFunc: func() bool {
-				return assertEqual(Solution{}.isPalindrome(12321), true)
-			},
-			inputStr: "12321",
-		},
-	}
-
-	os.Exit(saveResult(tests, resultPath))
+    if len(os.Args) < 2 { os.Exit(1) }
+    path := os.Args[1]
+    tests := []TestCase{
+        {func() bool { return assertEqual(Solution{}.isPalindrome(0), true) }, "0"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(-1), false) }, "-1"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(5), true) }, "5"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(10), false) }, "10"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(121), true) }, "121"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(-121), false) }, "-121"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(12321), true) }, "12321"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(1231), false) }, "1231"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(1001), true) }, "1001"},
+        {func() bool { return assertEqual(Solution{}.isPalindrome(2147447412), true) }, "2147447412"},
+    }
+    os.Exit(saveResult(tests, path))
 }

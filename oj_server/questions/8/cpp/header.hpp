@@ -7,10 +7,14 @@
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
+#include <queue>
+using namespace std;
+
 class Solution
 {
 public:
-    bool isPalindrome(int x)
+    int Solution::numBusesToDestination(vector<vector<int>>& routes, int source, int target)
     {
+        // 用户代码
     }
 };
